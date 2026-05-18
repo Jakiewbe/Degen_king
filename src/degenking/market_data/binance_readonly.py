@@ -13,6 +13,7 @@ from degenking.common.money import decimal_from_number
 from degenking.common.time import utc_now
 from degenking.market_data.models import (
     FundingRateSnapshot,
+    InstrumentInfo,
     OrderBookLevel,
     OrderBookSnapshot,
     TickerSnapshot,
@@ -297,4 +298,145 @@ def normalize_funding_rate(
         next_funding_time=next_funding_ts,
         funding_interval_seconds=funding_interval_seconds,
         observed_at=observed_at or utc_now(),
+    )
+
+
+# ---------------------------------------------------------------------------
+# exchangeInfo instrument normalizers
+# ---------------------------------------------------------------------------
+
+
+def _find_filter(filters: list[dict], filter_type: str) -> dict | None:
+    """Return the first filter dict matching *filter_type*, or None."""
+    for f in filters:
+        if isinstance(f, dict) and f.get("filterType") == filter_type:
+            return f
+    return None
+
+
+def _require_filter(data: dict, filter_type: str) -> dict:
+    """Return the filter dict for *filter_type* or raise ValueError."""
+    filters = data.get("filters")
+    if not isinstance(filters, list):
+        raise ValueError(
+            f"Expected 'filters' to be a list, got {type(filters).__name__}"
+        )
+    result = _find_filter(filters, filter_type)
+    if result is None:
+        raise ValueError(f"Missing required filter: {filter_type!r}")
+    return result
+
+
+def normalize_spot_exchange_info_symbol(data: dict) -> InstrumentInfo:
+    """Parse a single Binance spot exchangeInfo symbol entry.
+
+    Required top-level fields: ``symbol``, ``baseAsset``, ``quoteAsset``,
+    ``filters``.
+
+    Required filters:
+      - ``PRICE_FILTER`` with ``tickSize``
+      - ``LOT_SIZE`` with ``stepSize``
+
+    Optional:
+      - ``LOT_SIZE.minQty``
+      - ``NOTIONAL.minNotional`` or legacy ``MIN_NOTIONAL.minNotional``
+
+    Representative payload (one element of ``exchangeInfo["symbols"]``)::
+
+        {
+            "symbol": "BTCUSDT",
+            "baseAsset": "BTC",
+            "quoteAsset": "USDT",
+            "filters": [
+                {"filterType": "PRICE_FILTER", "tickSize": "0.01000000"},
+                {"filterType": "LOT_SIZE", "stepSize": "0.00001000", "minQty": "0.00001000"},
+                {"filterType": "NOTIONAL", "minNotional": "10.00000000"}
+            ]
+        }
+    """
+    symbol = _require_str(data, "symbol")
+    base_asset = _require_str(data, "baseAsset")
+    quote_asset = _require_str(data, "quoteAsset")
+
+    price_filter = _require_filter(data, "PRICE_FILTER")
+    tick_size = _require_decimal(price_filter, "tickSize")
+
+    lot_size = _require_filter(data, "LOT_SIZE")
+    step_size = _require_decimal(lot_size, "stepSize")
+    min_qty = _optional_decimal(lot_size, "minQty")
+
+    filters = data.get("filters", [])
+    notional = _find_filter(filters, "NOTIONAL") or _find_filter(filters, "MIN_NOTIONAL")
+    min_notional = None
+    if notional is not None:
+        min_notional = _optional_decimal(notional, "minNotional")
+
+    return InstrumentInfo(
+        exchange=_EXCHANGE,
+        symbol=symbol,
+        market_type=MarketType.SPOT,
+        base_asset=base_asset,
+        quote_asset=quote_asset,
+        price_tick_size=tick_size,
+        quantity_step_size=step_size,
+        min_quantity=min_qty,
+        min_notional=min_notional,
+    )
+
+
+def normalize_usdm_exchange_info_symbol(data: dict) -> InstrumentInfo:
+    """Parse a single Binance USD-M futures exchangeInfo symbol entry.
+
+    Required top-level fields: ``symbol``, ``baseAsset``, ``quoteAsset``,
+    ``filters``.
+
+    Required filters:
+      - ``PRICE_FILTER`` with ``tickSize``
+      - ``LOT_SIZE`` with ``stepSize``
+
+    Optional:
+      - ``LOT_SIZE.minQty``
+      - ``MIN_NOTIONAL.notional`` (or ``minNotional``)
+
+    Representative payload (one element of ``exchangeInfo["symbols"]``)::
+
+        {
+            "symbol": "BTCUSDT",
+            "baseAsset": "BTC",
+            "quoteAsset": "USDT",
+            "filters": [
+                {"filterType": "PRICE_FILTER", "tickSize": "0.10"},
+                {"filterType": "LOT_SIZE", "stepSize": "0.001", "minQty": "0.001"},
+                {"filterType": "MIN_NOTIONAL", "notional": "5.00"}
+            ]
+        }
+    """
+    symbol = _require_str(data, "symbol")
+    base_asset = _require_str(data, "baseAsset")
+    quote_asset = _require_str(data, "quoteAsset")
+
+    price_filter = _require_filter(data, "PRICE_FILTER")
+    tick_size = _require_decimal(price_filter, "tickSize")
+
+    lot_size = _require_filter(data, "LOT_SIZE")
+    step_size = _require_decimal(lot_size, "stepSize")
+    min_qty = _optional_decimal(lot_size, "minQty")
+
+    min_notional_filter = _find_filter(data.get("filters", []), "MIN_NOTIONAL")
+    min_notional = None
+    if min_notional_filter is not None:
+        min_notional = _optional_decimal(min_notional_filter, "notional")
+        if min_notional is None:
+            min_notional = _optional_decimal(min_notional_filter, "minNotional")
+
+    return InstrumentInfo(
+        exchange=_EXCHANGE,
+        symbol=symbol,
+        market_type=MarketType.PERPETUAL,
+        base_asset=base_asset,
+        quote_asset=quote_asset,
+        price_tick_size=tick_size,
+        quantity_step_size=step_size,
+        min_quantity=min_qty,
+        min_notional=min_notional,
     )

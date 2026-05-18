@@ -83,6 +83,21 @@ class ExchangeStatus:
 
 
 @dataclass(frozen=True, slots=True)
+class InstrumentInfo:
+    """Static instrument metadata parsed from exchangeInfo."""
+
+    exchange: str
+    symbol: str
+    market_type: MarketType
+    base_asset: str
+    quote_asset: str
+    price_tick_size: Decimal
+    quantity_step_size: Decimal
+    min_quantity: Decimal | None = None
+    min_notional: Decimal | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class BalanceSnapshot:
     asset: str
     wallet_balance: Decimal
