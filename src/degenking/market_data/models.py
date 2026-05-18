@@ -98,6 +98,19 @@ class InstrumentInfo:
 
 
 @dataclass(frozen=True, slots=True)
+class PrecisionCheckResult:
+    """Result of rounding and validating an order size against instrument filters."""
+
+    rounded_price: Decimal
+    rounded_quantity: Decimal
+    notional_quote: Decimal
+    min_quantity_ok: bool
+    min_notional_ok: bool
+    passed: bool
+    reason: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class BalanceSnapshot:
     asset: str
     wallet_balance: Decimal
