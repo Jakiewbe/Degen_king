@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import click
 
+from degenking.config.loader import load_config
+
 
 @click.group()
 def main() -> None:
@@ -17,16 +19,22 @@ def main() -> None:
 @click.option("--config", "config_path", default="configs/monitor.yaml")
 def monitor(config_path: str) -> None:
     """Read-only market data collection. No orders placed."""
-    click.echo(f"Monitor mode started with config: {config_path}")
-    # TODO: Phase 1 - load config, init persistence, start market data loop.
+    config = load_config(config_path)
+    if config.mode != "monitor":
+        raise click.ClickException(f"expected monitor config, got {config.mode}")
+    click.echo(f"Monitor config loaded: {config.config_hash}")
+    click.echo("No exchange connection is started yet.")
 
 
 @main.command()
 @click.option("--config", "config_path", default="configs/paper.yaml")
 def paper(config_path: str) -> None:
     """Paper trading with simulated fills. No real orders."""
-    click.echo(f"Paper mode started with config: {config_path}")
-    # TODO: Phase 1 - load config, init persistence, start paper trading loop.
+    config = load_config(config_path)
+    if config.mode != "paper":
+        raise click.ClickException(f"expected paper config, got {config.mode}")
+    click.echo(f"Paper config loaded: {config.config_hash}")
+    click.echo("No paper broker loop is started yet.")
 
 
 @main.command()

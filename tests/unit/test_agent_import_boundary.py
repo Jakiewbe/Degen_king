@@ -13,7 +13,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 FORBIDDEN_AGENT_IMPORTS = [
     "degenking.market_data",
     "degenking.strategy",
