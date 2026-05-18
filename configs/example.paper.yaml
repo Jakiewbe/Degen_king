@@ -1,0 +1,69 @@
+# Paper mode creates internal OrderIntent records and simulated fills only.
+# It must not submit exchange orders.
+
+mode: paper
+
+exchange:
+  name: bybit
+  environment: demo
+  readonly: true
+
+symbols:
+  - BTCUSDT
+  - ETHUSDT
+  - SOLUSDT
+
+market_data:
+  max_tick_age_ms: 1500
+  max_orderbook_age_ms: 1500
+  max_funding_age_ms: 60000
+  max_latency_ms: 750
+
+strategy:
+  funding_arbitrage:
+    enabled: true
+    min_net_edge_bps: 8
+    min_funding_rate_bps: 5
+    min_seconds_to_funding: 900
+    max_seconds_to_funding: 25200
+    max_basis_bps: 75
+    max_holding_hours: 72
+
+risk:
+  max_total_equity_usage_pct: 20
+  max_position_notional_per_symbol: 1000
+  max_leverage: 1
+  min_liquidation_buffer_pct: 30
+  max_daily_loss_pct: 2
+  max_single_trade_loss_pct: 0.5
+  max_unhedged_seconds: 10
+  max_slippage_bps: 10
+  min_orderbook_depth_usd: 50000
+  max_api_latency_ms: 750
+
+paper:
+  starting_equity_usdt: 10000
+  taker_fee_bps: 6
+  maker_fee_bps: 2
+  partial_fill_enabled: true
+  latency_ms: 250
+
+kill_switch:
+  enabled: true
+  mode: simulated
+  require_manual_reset: true
+
+agent:
+  enabled: true
+  read_sources:
+    - audit_events
+    - reporting_views
+  can_modify_config: false
+  can_access_execution: false
+
+persistence:
+  backend: postgresql
+
+logging:
+  level: INFO
+  format: json

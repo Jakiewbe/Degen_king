@@ -1,0 +1,1 @@
+"""Paper fill model placeholder."""
