@@ -43,3 +43,12 @@ class FreshnessStatus(StrEnum):
 
     FRESH = "fresh"
     STALE = "stale"
+
+
+class EventSeverity(StrEnum):
+    """Audit/system event severity."""
+
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
