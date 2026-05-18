@@ -12,7 +12,7 @@ The MVP is intentionally narrow: monitor and paper trading only. It has no live 
 
 Included in MVP:
 
-- Bybit demo/testnet as the only first exchange target.
+- Binance testnet/read-only as the only first data-source target.
 - Read-only market data and optional read-only account snapshots.
 - Spot-perpetual funding arbitrage for `BTCUSDT`, `ETHUSDT`, and `SOLUSDT`.
 - Deterministic signal calculation, risk decisions, order intents, simulated fills, reconciliation, position state, and audit logs.
@@ -26,14 +26,15 @@ Excluded from MVP:
 - Cross-exchange perpetual arbitrage.
 - LLM or agent access to exchange, execution, broker, order-client, or config mutation modules.
 
-OKX and Binance are future adapter targets only.
+Bybit and OKX are future adapter targets only. The chosen first data source does
+not determine the future execution venue.
 
 ## Components
 
 | Component | Responsibility |
 | --- | --- |
 | `config` | Load immutable runtime config, validate mode boundaries, compute `config_hash`. |
-| `market_data` | Define read-only Bybit market/account snapshot contracts, freshness checks, and latency samples. |
+| `market_data` | Define read-only Binance market/account snapshot contracts, freshness checks, and latency samples. |
 | `strategy` | Generate funding-arbitrage candidate signals. No order creation. |
 | `risk` | Apply layered vetoes and guards. Risk approval is required before any paper order intent. |
 | `orders` | Define `OrderIntent`, idempotency keys, client order IDs, state transitions, and duplicate prevention. |

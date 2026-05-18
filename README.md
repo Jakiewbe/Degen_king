@@ -8,7 +8,7 @@ Status: Phase 0 scaffolding and specifications.
 
 Included:
 
-- One exchange target: Bybit demo/testnet, read-only first.
+- One exchange data-source target: Binance testnet/read-only first.
 - One strategy: spot-perpetual funding arbitrage.
 - Symbols: `BTCUSDT`, `ETHUSDT`, `SOLUSDT`.
 - Modes: `monitor` and `paper`.
@@ -22,6 +22,10 @@ Excluded:
 - Dashboard or UI.
 - Autonomous agent execution.
 - Any LLM access to exchange, execution, broker, order-client, or config mutation modules.
+
+The first data source does not decide the future execution venue. MVP exchange
+code is kept behind normalized read-only market data models so later paper,
+testnet, and live execution can use a different venue after a separate review.
 
 This repository is for engineering architecture and risk-controlled automation. It is not financial advice.
 

@@ -36,7 +36,7 @@ def test_latency_threshold() -> None:
 def test_ticker_mid_and_orderbook_depth() -> None:
     observed_at = datetime(2026, 1, 1, tzinfo=UTC)
     ticker = TickerSnapshot(
-        exchange="bybit",
+        exchange="binance",
         symbol="BTCUSDT",
         market_type=MarketType.SPOT,
         bid=Decimal("99"),
@@ -44,7 +44,7 @@ def test_ticker_mid_and_orderbook_depth() -> None:
         observed_at=observed_at,
     )
     orderbook = OrderBookSnapshot(
-        exchange="bybit",
+        exchange="binance",
         symbol="BTCUSDT",
         market_type=MarketType.SPOT,
         bids=(OrderBookLevel(price=Decimal("99"), quantity=Decimal("2")),),

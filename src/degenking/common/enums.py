@@ -15,13 +15,12 @@ class RuntimeMode(StrEnum):
 class ExchangeName(StrEnum):
     """MVP exchange target."""
 
-    BYBIT = "bybit"
+    BINANCE = "binance"
 
 
 class ExchangeEnvironment(StrEnum):
     """Supported non-live exchange environments."""
 
-    DEMO = "demo"
     TESTNET = "testnet"
 
 

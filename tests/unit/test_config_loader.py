@@ -13,7 +13,7 @@ def test_monitor_example_config_loads() -> None:
     config = load_config(Path("configs/example.monitor.yaml"))
 
     assert config.mode == RuntimeMode.MONITOR
-    assert config.exchange.name == "bybit"
+    assert config.exchange.name == "binance"
     assert config.exchange.readonly is True
     assert config.paper is None
     assert config.config_hash
@@ -36,8 +36,8 @@ def test_live_mode_is_rejected(tmp_path: Path) -> None:
         """
 mode: live
 exchange:
-  name: bybit
-  environment: demo
+  name: binance
+  environment: testnet
   readonly: true
 symbols: [BTCUSDT]
 market_data:

@@ -4,8 +4,8 @@
 mode: paper
 
 exchange:
-  name: bybit
-  environment: demo
+  name: binance
+  environment: testnet
   readonly: true
 
 symbols:

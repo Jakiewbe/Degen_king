@@ -33,8 +33,8 @@ class ExchangeConfig(StrictModel):
 
     @model_validator(mode="after")
     def validate_mvp_exchange(self) -> ExchangeConfig:
-        if self.name != ExchangeName.BYBIT:
-            raise ValueError("MVP supports only the bybit exchange target")
+        if self.name != ExchangeName.BINANCE:
+            raise ValueError("MVP supports only the binance exchange data source")
         if not self.readonly:
             raise ValueError("MVP exchange config must be readonly")
         return self
