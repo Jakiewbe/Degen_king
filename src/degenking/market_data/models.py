@@ -24,6 +24,10 @@ class TickerSnapshot:
     def mid(self) -> Decimal:
         return (self.bid + self.ask) / Decimal("2")
 
+    @property
+    def mark_or_mid(self) -> Decimal:
+        return self.mark if self.mark is not None else self.mid
+
 
 @dataclass(frozen=True, slots=True)
 class OrderBookLevel:

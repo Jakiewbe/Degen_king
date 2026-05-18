@@ -224,6 +224,29 @@ def test_pre_trade_rejects_unfilled_or_high_slippage_estimate() -> None:
     assert _check(decision, RiskCheckName.SLIPPAGE).reason == "slippage_or_fill_depth_exceeds_limit"
 
 
+def test_pre_trade_rejects_precision_failure() -> None:
+    from degenking.market_data.models import PrecisionCheckResult
+
+    decision = evaluate_pre_trade(
+        _inputs(
+            precision_checks=(
+                PrecisionCheckResult(
+                    rounded_price=Decimal("100"),
+                    rounded_quantity=Decimal("0"),
+                    notional_quote=Decimal("0"),
+                    min_quantity_ok=False,
+                    min_notional_ok=False,
+                    passed=False,
+                    reason="quantity below minimum",
+                ),
+            )
+        )
+    )
+
+    assert decision.approved is False
+    assert _check(decision, RiskCheckName.PRECISION).reason == "precision_check_failed"
+
+
 def test_pre_trade_rejects_symbol_notional_limit() -> None:
     decision = evaluate_pre_trade(_inputs(current_symbol_notional_quote=Decimal("950")))
 

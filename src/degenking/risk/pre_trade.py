@@ -9,7 +9,7 @@ from enum import StrEnum
 from degenking.market_data.depth import SlippageEstimate
 from degenking.market_data.freshness import FreshnessResult
 from degenking.market_data.latency import LatencyCheck
-from degenking.market_data.models import ExchangeStatus
+from degenking.market_data.models import ExchangeStatus, PrecisionCheckResult
 from degenking.strategy.models import FundingArbitrageSignal
 
 
@@ -24,6 +24,7 @@ class RiskCheckName(StrEnum):
     MANUAL_RECOVERY_LOCK = "manual_recovery_lock"
     ORDERBOOK_DEPTH = "orderbook_depth"
     SLIPPAGE = "slippage"
+    PRECISION = "precision"
     SYMBOL_NOTIONAL = "symbol_notional"
     TOTAL_EQUITY_USAGE = "total_equity_usage"
     ACCOUNT_BALANCE = "account_balance"
@@ -64,6 +65,7 @@ class PreTradeRiskInputs:
     proposed_notional_quote: Decimal
     account_equity_quote: Decimal
     available_balance_quote: Decimal
+    precision_checks: tuple[PrecisionCheckResult, ...] = ()
     current_symbol_notional_quote: Decimal = Decimal("0")
     current_total_used_equity_quote: Decimal = Decimal("0")
     kill_switch_active: bool = False
@@ -106,6 +108,7 @@ def evaluate_pre_trade(inputs: PreTradeRiskInputs) -> PreTradeRiskDecision:
             inputs.entry_slippage_estimates,
             inputs.limits.max_slippage_bps,
         ),
+        _check_precision(inputs.precision_checks),
         _check_symbol_notional(inputs),
         _check_total_equity_usage(inputs),
         _check_account_balance(inputs),
@@ -216,6 +219,19 @@ def _check_slippage(
         observed_value=",".join(str(estimate.slippage_bps) for estimate in estimates),
         limit_value=str(max_slippage_bps),
         reason=None if not bad_estimates else "slippage_or_fill_depth_exceeds_limit",
+    )
+
+
+def _check_precision(checks: tuple[PrecisionCheckResult, ...]) -> RiskCheck:
+    failed = [check for check in checks if not check.passed]
+    observed_value = (
+        "pass" if not failed else ";".join(check.reason or "failed" for check in failed)
+    )
+    return RiskCheck(
+        name=RiskCheckName.PRECISION,
+        passed=not failed,
+        observed_value=observed_value,
+        reason=None if not failed else "precision_check_failed",
     )
 
 
