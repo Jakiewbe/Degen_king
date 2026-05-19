@@ -28,6 +28,7 @@ ALLOWED_TRANSITIONS: dict[OrderIntentState, frozenset[OrderIntentState]] = {
     OrderIntentState.RISK_APPROVED: frozenset(
         {
             OrderIntentState.SUBMITTED_TO_PAPER_BROKER,
+            OrderIntentState.DUPLICATE_SUPPRESSED,
             OrderIntentState.STALE_CANCEL_REQUESTED,
             OrderIntentState.FAILED_MANUAL_RECOVERY_REQUIRED,
         }
