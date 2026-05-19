@@ -28,6 +28,7 @@ class KillSwitchMode(StrEnum):
     """Kill-switch behavior by runtime environment."""
 
     SIMULATED = "simulated"
+    ENFORCE = "enforce"
 
 
 class MarketType(StrEnum):
